@@ -7,6 +7,10 @@
 <script>
 import axios from 'axios'
 
+function randomIntFromInterval(min, max) { // min and max included 
+  return Math.floor(Math.random() * (max - min + 1) + min)
+}
+
 export default {
   name: 'PwGen',
   props: {
@@ -25,17 +29,32 @@ export default {
   data() {
     return {
       pwd: '',
+      word1: '',
+      word2: '',
+      symbol: '',
     }
   },
   methods: {
     generate() {
-      axios.get('https://i2s.devpods.com/pwgen?length=' + this.length + '&count=' + this.count)
-        .then(response => {
-          this.pwd = response.data["Passwords"][0]["Password"]
-        })
-        .catch(error => {
-          console.log(error)
-        })
+      let symbol_list = "!@#$%^&*()_+"
+      let w_length = (this.length - 4) / 2
+      let rnd_number = randomIntFromInterval(1000, 9999).toString()
+      let rnd_symbol = symbol_list[randomIntFromInterval(0, symbol_list.length - 1)]
+      axios.get("https://random-word-api.herokuapp.com/word?number=10&length=" + w_length).then(
+        response => {
+          let words = response.data
+          this.word1 = words[randomIntFromInterval(0, words.length - 1)]
+          this.word2 = words[randomIntFromInterval(0, words.length - 1)]
+          if (this.word1 === this.word2) {
+            this.word2 = words[randomIntFromInterval(0, words.length - 1)]
+          }
+          this.pwd = this.word1 + rnd_number + rnd_symbol + this.word2
+          if (this.pwd.length > this.length) {
+            rnd_number = rnd_number.substring(0, rnd_number.length - 1)
+            this.pwd = this.word1 + rnd_number + rnd_symbol + this.word2
+          }
+        }
+      )
     }
   },
   mounted() {
