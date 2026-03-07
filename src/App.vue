@@ -38,6 +38,7 @@ export default {
 
 img {
   width: 256px;
+  max-width: 40vw;
   margin: 0 auto;
   filter: invert(93%) sepia(2%) saturate(3563%) hue-rotate(173deg) brightness(108%) contrast(85%);
 }
@@ -45,12 +46,19 @@ img {
 body {
   background: #112031;
   color: #D4ECDD;
+  margin: 0;
+  padding: 0;
 }
 
 #app {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
+  padding: 1rem;
+  padding-bottom: 4rem;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  max-width: 100vw;
 }
 
 footer {
@@ -58,5 +66,12 @@ footer {
   bottom: 0;
   width: 100%;
   text-align: center;
+}
+
+@media (max-width: 480px) {
+  img {
+    width: 128px;
+    max-width: 30vw;
+  }
 }
 </style>
