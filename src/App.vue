@@ -1,7 +1,14 @@
 <template>
   <img alt="Vue logo" src="./assets/lock.svg">
-  <PwGen length=16 count=1 fontsize=80 startGradColor="#faf0ca" endGradColor="#0d3b66" />
-  <PwGen length=32 count=1 fontsize=40 startGradColor="#fdfcdc" endGradColor="#0081a7" />
+  <div class="toggle-container">
+    <span class="toggle-label">{{ useWordlist ? 'EFF Wordlist' : 'Random API' }}</span>
+    <label class="toggle-switch">
+      <input type="checkbox" v-model="useWordlist">
+      <span class="slider"></span>
+    </label>
+  </div>
+  <PwGen length=16 count=1 fontsize=80 startGradColor="#faf0ca" endGradColor="#0d3b66" :use-wordlist="useWordlist" />
+  <PwGen length=32 count=1 fontsize=40 startGradColor="#fdfcdc" endGradColor="#0081a7" :use-wordlist="useWordlist" />
   <footer>
     <AboutMe />
   </footer>
@@ -16,6 +23,11 @@ export default {
   components: {
     PwGen,
     AboutMe
+  },
+  data() {
+    return {
+      useWordlist: true
+    }
   }
 }
 </script>
@@ -66,6 +78,65 @@ footer {
   bottom: 0;
   width: 100%;
   text-align: center;
+}
+
+.toggle-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 1rem 0;
+  font-family: 'Courier Prime', monospace;
+}
+
+.toggle-label {
+  font-size: 14px;
+  color: #D4ECDD;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 24px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-switch .slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #345B63;
+  transition: 0.3s;
+  border-radius: 24px;
+}
+
+.toggle-switch .slider:before {
+  content: "";
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: #D4ECDD;
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+.toggle-switch input:checked + .slider {
+  background-color: #0d3b66;
+}
+
+.toggle-switch input:checked + .slider:before {
+  transform: translateX(24px);
 }
 
 @media (max-width: 480px) {

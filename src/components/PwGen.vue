@@ -8,8 +8,20 @@
 <script>
 import axios from 'axios'
 
-function randomIntFromInterval(min, max) { // min and max included 
+function randomIntFromInterval(min, max) {
   return Math.floor(Math.random() * (max - min + 1) + min)
+}
+
+let cachedWordlist = null
+
+async function fetchEFFWordlist() {
+  if (cachedWordlist) return cachedWordlist
+  const response = await axios.get('https://www.eff.org/files/2016/07/18/eff_large_wordlist.txt')
+  cachedWordlist = response.data.trim().split('\n')
+    .map(line => line.split('\t')[1])
+    .filter(w => w)
+    .map(w => w.trim())
+  return cachedWordlist
 }
 
 export default {
@@ -18,6 +30,10 @@ export default {
     length: Number,
     count: Number,
     fontsize: Number,
+    useWordlist: {
+      type: Boolean,
+      default: true
+    },
     startGradColor: {
       type: String,
       default: '#f3ec78'
@@ -36,6 +52,11 @@ export default {
       showTooltip: false,
     }
   },
+  watch: {
+    useWordlist() {
+      this.generate()
+    }
+  },
   methods: {
     copyToClipboard() {
       navigator.clipboard.writeText(this.pwd).then(() => {
@@ -43,12 +64,41 @@ export default {
         setTimeout(() => { this.showTooltip = false }, 1200)
       })
     },
-    generate() {
-      let symbol_list = "!@#$%^&*()_+"
-      let w_length = (this.length - 4) / 2
-      let rnd_number = randomIntFromInterval(1000, 9999).toString()
-      let rnd_symbol = symbol_list[randomIntFromInterval(0, symbol_list.length - 1)]
-      axios.get("https://random-word-api.herokuapp.com/word?number=10&length=" + w_length).then(
+    async generateFromWordlist() {
+      const wordlist = await fetchEFFWordlist()
+      const symbolList = "!@#$%^&*()_+"
+      let rndNumber = randomIntFromInterval(1000, 9999).toString()
+      const rndSymbol = symbolList[randomIntFromInterval(0, symbolList.length - 1)]
+      const targetWordChars = this.length - 5
+
+      const words = []
+      let totalLen = 0
+      while (totalLen < targetWordChars) {
+        const remaining = targetWordChars - totalLen
+        let candidates = wordlist.filter(w => w.length <= remaining)
+        if (candidates.length === 0) break
+        const longer = candidates.filter(w => w.length >= 3)
+        if (longer.length > 0) candidates = longer
+        const word = candidates[randomIntFromInterval(0, candidates.length - 1)]
+        words.push(word)
+        totalLen += word.length
+      }
+
+      const mid = Math.ceil(words.length / 2)
+      this.word1 = words.slice(0, mid).join('')
+      this.word2 = words.slice(mid).join('')
+      this.pwd = this.word1 + rndNumber + rndSymbol + this.word2
+      if (this.pwd.length > this.length) {
+        rndNumber = rndNumber.substring(0, rndNumber.length - 1)
+        this.pwd = this.word1 + rndNumber + rndSymbol + this.word2
+      }
+    },
+    generateFromApi() {
+      let symbolList = "!@#$%^&*()_+"
+      let wLength = (this.length - 4) / 2
+      let rndNumber = randomIntFromInterval(1000, 9999).toString()
+      let rndSymbol = symbolList[randomIntFromInterval(0, symbolList.length - 1)]
+      axios.get("https://random-word-api.herokuapp.com/word?number=10&length=" + wLength).then(
         response => {
           let words = response.data
           this.word1 = words[randomIntFromInterval(0, words.length - 1)]
@@ -56,13 +106,20 @@ export default {
           if (this.word1 === this.word2) {
             this.word2 = words[randomIntFromInterval(0, words.length - 1)]
           }
-          this.pwd = this.word1 + rnd_number + rnd_symbol + this.word2
+          this.pwd = this.word1 + rndNumber + rndSymbol + this.word2
           if (this.pwd.length > this.length) {
-            rnd_number = rnd_number.substring(0, rnd_number.length - 1)
-            this.pwd = this.word1 + rnd_number + rnd_symbol + this.word2
+            rndNumber = rndNumber.substring(0, rndNumber.length - 1)
+            this.pwd = this.word1 + rndNumber + rndSymbol + this.word2
           }
         }
       )
+    },
+    generate() {
+      if (this.useWordlist) {
+        this.generateFromWordlist()
+      } else {
+        this.generateFromApi()
+      }
     }
   },
   mounted() {
