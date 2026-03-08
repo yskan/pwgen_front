@@ -7,21 +7,10 @@
 
 <script>
 import axios from 'axios'
+import effWordlist from '../effWordlist'
 
 function randomIntFromInterval(min, max) {
   return Math.floor(Math.random() * (max - min + 1) + min)
-}
-
-let cachedWordlist = null
-
-async function fetchEFFWordlist() {
-  if (cachedWordlist) return cachedWordlist
-  const response = await axios.get('https://www.eff.org/files/2016/07/18/eff_large_wordlist.txt')
-  cachedWordlist = response.data.trim().split('\n')
-    .map(line => line.split('\t')[1])
-    .filter(w => w)
-    .map(w => w.trim())
-  return cachedWordlist
 }
 
 export default {
@@ -64,8 +53,8 @@ export default {
         setTimeout(() => { this.showTooltip = false }, 1200)
       })
     },
-    async generateFromWordlist() {
-      const wordlist = await fetchEFFWordlist()
+    generateFromWordlist() {
+      const wordlist = effWordlist
       const symbolList = "!@#$%^&*()_+"
       let rndNumber = randomIntFromInterval(1000, 9999).toString()
       const rndSymbol = symbolList[randomIntFromInterval(0, symbolList.length - 1)]
